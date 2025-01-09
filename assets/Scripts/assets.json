@@ -1,0 +1,73 @@
+{
+    "symbols" : [
+        {
+            "name" : "Symbol1",
+            "path" : "Images/symbols/Symbol1",
+            "assetType" : "sprite",
+            "identifier" : 0
+        }
+        ,
+        {
+            "name" : "Symbol2",
+            "path" : "Images/symbols/Symbol2",
+            "assetType" : "sprite",
+            "identifier" : 1
+        }
+        ,
+        {
+            "name" : "Symbol3",
+            "path" : "Images/symbols/Symbol3",
+            "assetType" : "sprite",
+            "identifier" : 2
+        }
+        ,
+        {
+            "name" : "Symbol4",
+            "path" : "Images/symbols/Symbol4",
+            "assetType" : "sprite",
+            "identifier" : 3
+        }
+        ,
+        {
+            "name" : "Symbol5",
+            "path" : "Images/symbols/Symbol5",
+            "assetType" : "sprite",
+            "identifier" : 4
+        }
+        ,
+        {
+            "name" : "Symbol6",
+            "path" : "Images/symbols/Symbol6",
+            "assetType" : "sprite",
+            "identifier" : 5
+        }
+        ,
+        {
+            "name" : "Symbol7",
+            "path" : "Images/symbols/Symbol7",
+            "assetType" : "sprite",
+            "identifier" : 6
+        }
+        ,
+        {
+            "name" : "Symbol8",
+            "path" : "Images/symbols/Symbol8",
+            "assetType" : "sprite",
+            "identifier" : 7
+        }
+        ,
+        {
+            "name" : "Symbol9",
+            "path" : "Images/symbols/Symbol9",
+            "assetType" : "sprite",
+            "identifier" : 8
+        }
+        ,
+        {
+            "name" : "Symbol10",
+            "path" : "Images/symbols/Symbol10",
+            "assetType" : "sprite",
+            "identifier" : 9
+        }
+    ]
+}

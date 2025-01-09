@@ -1,0 +1,22 @@
+{
+    "name": "textmeshpro-tool",
+    "version": "1.1.1",
+    "description": "textmeshpro sdf字体打包工具",
+    "author": "Yip",
+    "main": "main.js",
+    "main-menu": {
+        "i18n:MAIN_MENU.package.title/TextMeshPro/Font Tool": {
+            "message": "textmeshpro-tool:openPanel"
+        },
+        "i18n:MAIN_MENU.package.title/TextMeshPro/Import Assets": {
+            "message": "textmeshpro-tool:importExample"
+        }
+    },
+    "panel": {
+        "main": "panel/index.js",
+        "type": "dockable",
+        "title": "TextMeshPro Tool",
+        "width": 600,
+        "height": 400
+    }
+}

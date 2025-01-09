@@ -1,0 +1,128 @@
+// Learn TypeScript:
+//  - https://docs.cocos.com/creator/manual/en/scripting/typescript.html
+// Learn Attribute:
+//  - https://docs.cocos.com/creator/manual/en/scripting/reference/attributes.html
+// Learn life-cycle callbacks:
+//  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
+
+import { AssetData, AssetItem, SymbolAsset } from "./GameConfig";
+import StringToAssetType from "./StringToAssetsType";
+
+const { ccclass, property } = cc._decorator;
+//asstsdata json contains name path for assets
+
+@ccclass
+export default class AssetsLoader extends cc.Component {
+    //varible to hold assets datas
+    allAssets = [];
+    //variable to store Symbols data
+    symbolsData: SymbolAsset[] = [];
+
+    //Singleton instance (without attaching to node)
+    private static _instance: AssetsLoader = null;
+
+    private constructor() {
+        super();
+        // Private constructor to prevent direct instantiation
+    }
+
+    public static get instance(): AssetsLoader {
+        if (!this._instance) {
+            this._instance = new AssetsLoader();
+        }
+        return this._instance;
+    }
+    
+    //function to execure the randomize symbols one by one
+    public async randomizeSymbols(assetsData: cc.JsonAsset): Promise<void> {
+        await this.getAllAssetsFromJSON(assetsData);
+        await this.preloadAssets(this.allAssets, () => { cc.log("Loaded"); });
+        await this.shuffleArray(this.symbolsData);
+
+    }
+    
+
+    // Function to get assets from JSON
+    async getAllAssetsFromJSON(assetsData: cc.JsonAsset) {
+        const assetData: AssetData = assetsData.json;
+        // Iterate over all keys (spineData, audioData, etc.)
+        for (const key in assetData) {
+            if (assetData.hasOwnProperty(key)) {
+                const assets = assetData[key];  // Get the array of AssetItem
+                assets.forEach(asset => {
+                    this.allAssets.push(asset);
+                });
+            }
+        }
+    }
+    //function to preload assets and store in respective variables
+    async preloadAssets(allAssets: AssetItem[], cbPass: Function) {
+        const promises = allAssets.map(asset => {
+            return new Promise<void>((resolve, reject) => {
+                cc.resources.preload(asset.path, StringToAssetType.stringToAssetType(asset.assetType), (err) => {
+                    if (err) {
+                        cc.error(err);
+                        reject(err);
+                        return;
+                    }
+                    cc.resources.load(asset.path, StringToAssetType.stringToAssetType(asset.assetType), (err, resource) => {
+                        if (err) {
+                            cc.error(err);
+                            reject(err);
+                            return;
+                        }
+                        if (asset.assetType === 'sprite') {
+                            this.symbolsData.push({
+                                name: asset.name,
+                                spriteFrame:resource as cc.SpriteFrame,
+                                path: asset.path,
+                                identifier: asset.identifier
+                            });
+                        }
+                        resolve();
+                    });
+                });
+            });
+        });
+    
+        await Promise.all(promises);
+        cbPass();
+    }
+    
+    //function to shuffle the array
+    async shuffleArray(array) {
+        // Fisher-Yates Sorting Algorithm
+        const shuffle = (array) => {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        };
+        return shuffle(array); // Directly return the result of shuffle
+    }
+    
+    //function to assign frame to symbols in each column
+    async assignSymbolsFrame(rollSymbolsChilds: cc.Node[]) {
+
+        for (let i = 0; i < rollSymbolsChilds.length; i++) {
+            const symbolNodes = rollSymbolsChilds[i].children;
+    
+            // Clone and shuffle the symbols data for the current column
+            const columnSymbols = [...this.symbolsData];
+            this.shuffleArray(columnSymbols);
+    
+            for (let j = 0; j < symbolNodes.length; j++) {
+                // Ensure the symbol index is within the bounds of the shuffled columnSymbols
+                const symbolIndex = j % columnSymbols.length;
+    
+                const sprite = symbolNodes[j].getComponent(cc.Sprite);
+                if (sprite) {
+                    sprite.spriteFrame = columnSymbols[symbolIndex].spriteFrame;
+                }
+            }
+        }
+    }
+    
+    
+}
