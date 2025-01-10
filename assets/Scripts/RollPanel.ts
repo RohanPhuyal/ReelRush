@@ -5,6 +5,7 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
+import AssetsLoader from "./AssetsLoader";
 import GameManager from "./GameManager";
 import GameStateManager, { GameState } from "./GameStateManager";
 
@@ -15,16 +16,23 @@ export default class NewClass extends cc.Component {
 
     private elapsedTime = 0;
 
-    private symbols: cc.Node[] = [];
+    // private randomSpriteTime=0;
+
+    private rollSymbolsChilds: cc.Node[] = [];
+    private symbols: cc.Node[][] = [];
+    private clampPoint: number[] = [];
+
+    @property(cc.JsonAsset)
+    resultJson: cc.JsonAsset = null;
 
     async onLoad() {
         await GameManager.instance.startGameManager();
-        const roll = GameManager.instance.rollSymbolsChilds;
-        roll.forEach((node) => {
-            node.children.forEach((symbol) => {
-                this.symbols.push(symbol);
-            })
-        })
+        this.rollSymbolsChilds = GameManager.instance.rollSymbolsChilds;
+        // Initialize the symbols array as a 2D array
+        this.rollSymbolsChilds.forEach((rollNode) => {
+            this.symbols.push([...rollNode.children]); // Use spread operator to ensure a proper 2D array
+        });
+        this.clampPoint = GameManager.instance.clampPositions;
     }
 
     start() {
@@ -32,56 +40,80 @@ export default class NewClass extends cc.Component {
     }
     private rollingDown(dt) {
         this.elapsedTime += dt;
-
+        // Iterate through each roll (row in the 2D array)
         for (let i = 0; i < this.symbols.length; i++) {
-            const element = this.symbols[i];
-            element.position = element.position.add(new cc.Vec3(0, -dt * 500, 0));
-            if (element.position.y <= GameManager.instance.botP) {
-                element.position = new cc.Vec3(element.position.x, GameManager.instance.topP, element.position.z);
+            const rollSymbols = this.symbols[i];
+
+            // Iterate through each symbol in the roll
+            for (let j = 0; j < rollSymbols.length; j++) {
+                const symbol = rollSymbols[j];
+
+                // Move the symbol down
+                symbol.position = symbol.position.add(new cc.Vec3(0, -dt * 2500, 0));
+
+                // Check if the symbol moves past the bottom boundary
+                if (symbol.position.y <= GameManager.instance.botPosition) {
+                    // Move the symbol to the top
+                    symbol.position = new cc.Vec3(symbol.position.x, GameManager.instance.topPosition, symbol.position.z);
+
+                    // Update the 2D array to reflect the new order
+                    const movedSymbol = rollSymbols.splice(j, 1)[0]; // Remove the symbol from the current position
+                    rollSymbols.push(movedSymbol); // Add the symbol to the end of the roll array
+
+                    // Adjust the index to account for the removed element
+                    j--;
+                }
             }
         }
         if (this.elapsedTime >= 5) {
             GameStateManager.currentGameState = GameState.Slowdown;
+            this.elapsedTime = 0;
         }
     }
-    calculateDistanceToNextPoint(i: number): number {
-        const currentSymbolPosition = this.symbols[i].position.y;
-        
-        const yPositions: number[] = GameManager.instance.vertG;
-        if(currentSymbolPosition <= yPositions[0]){
-            cc.log("reset");
-            this.symbols[i].position=new cc.Vec3(this.symbols[i].position.x,GameManager.instance.topP,this.symbols[i].position.z);
-            return null;
-        }
-    
-        // Filter out Y positions greater than the current position
-        const filteredYPositions = yPositions.filter((y) => y <= currentSymbolPosition);
-    
-        // If there are no valid positions, return the current position (or handle gracefully)
-        if (filteredYPositions.length === 0) {
-            return currentSymbolPosition; // Or handle as needed
-        }
-    
-        // Get the largest Y value that is less than or equal to currentSymbolPosition
-        const closestY = Math.max(...filteredYPositions);
-    
-        return closestY;
-    }
-    
-    private rollingDownSlow() {
+
+    async rollingDownSlow() {
+        const clampPoints = this.clampPoint;
+
         for (let i = 0; i < this.symbols.length; i++) {
-            cc.log("i"+i);
-            const targetY = this.calculateDistanceToNextPoint(i);
-            if(targetY!=null){
-                cc.tween(this.symbols[i])
-                .to(0.1, { position: cc.v3(this.symbols[i].position.x, targetY, this.symbols[i].position.z) })
-                .start();
+            const rollSymbols = this.symbols[i]; // Each roll (e.g., Roll_0, Roll_1, Roll_2)
+
+            for (let j = 0; j < rollSymbols.length; j++) {
+                const symbol = rollSymbols[j];
+                const currentY = symbol.position.y;
+
+                if (currentY < clampPoints[0]) {
+                    // If the symbol goes below the lowest clamp point, wrap it to the top
+                    symbol.position = new cc.Vec3(symbol.position.x, clampPoints[clampPoints.length - 1], symbol.position.z);
+
+                    // Update the 2D array to reflect the new order
+                    const movedSymbol = rollSymbols.splice(j, 1)[0]; // Remove the symbol from the current position
+                    rollSymbols.push(movedSymbol); // Add the symbol to the end of the roll array
+
+                    // Adjust the index to account for the removed element
+                    j--;
+                } else {
+                    // Find the closest clamp point that is less than or equal to the current Y position
+                    const targetY = clampPoints.reduce((closest, point) => {
+                        return currentY >= point && point > closest ? point : closest;
+                    }, clampPoints[0]);
+
+                    // Tween the symbol to the target position
+                    cc.tween(symbol)
+                        .to(0.1, { position: cc.v3(symbol.position.x, targetY, symbol.position.z) }, { easing: 'cubicOut' })
+                        .start();
+                }
             }
-            
         }
-        GameStateManager.currentGameState = GameState.Ready;
+        AssetsLoader.instance.assignWinSymbols(this.symbols, this.resultJson);
+        GameStateManager.currentGameState = GameState.Result;
+        cc.log(this.symbols);
+        await GameManager.instance.calculateResult(this.symbols);
     }
-    
+
+
+
+
+
     update(dt) {
         if (GameStateManager.currentGameState === GameState.Rolling && this.elapsedTime <= 5) {
             this.rollingDown(dt);

@@ -32,7 +32,7 @@ export default class AssetsLoader extends cc.Component {
         }
         return this._instance;
     }
-    
+
     //function to execure the randomize symbols one by one
     public async randomizeSymbols(assetsData: cc.JsonAsset): Promise<void> {
         await this.getAllAssetsFromJSON(assetsData);
@@ -40,7 +40,7 @@ export default class AssetsLoader extends cc.Component {
         await this.shuffleArray(this.symbolsData);
 
     }
-    
+
 
     // Function to get assets from JSON
     async getAllAssetsFromJSON(assetsData: cc.JsonAsset) {
@@ -74,7 +74,7 @@ export default class AssetsLoader extends cc.Component {
                         if (asset.assetType === 'sprite') {
                             this.symbolsData.push({
                                 name: asset.name,
-                                spriteFrame:resource as cc.SpriteFrame,
+                                spriteFrame: resource as cc.SpriteFrame,
                                 path: asset.path,
                                 identifier: asset.identifier
                             });
@@ -84,11 +84,11 @@ export default class AssetsLoader extends cc.Component {
                 });
             });
         });
-    
+
         await Promise.all(promises);
         cbPass();
     }
-    
+
     //function to shuffle the array
     async shuffleArray(array) {
         // Fisher-Yates Sorting Algorithm
@@ -101,21 +101,21 @@ export default class AssetsLoader extends cc.Component {
         };
         return shuffle(array); // Directly return the result of shuffle
     }
-    
+
     //function to assign frame to symbols in each column
     async assignSymbolsFrame(rollSymbolsChilds: cc.Node[]) {
 
         for (let i = 0; i < rollSymbolsChilds.length; i++) {
             const symbolNodes = rollSymbolsChilds[i].children;
-    
+
             // Clone and shuffle the symbols data for the current column
             const columnSymbols = [...this.symbolsData];
             this.shuffleArray(columnSymbols);
-    
+
             for (let j = 0; j < symbolNodes.length; j++) {
                 // Ensure the symbol index is within the bounds of the shuffled columnSymbols
                 const symbolIndex = j % columnSymbols.length;
-    
+
                 const sprite = symbolNodes[j].getComponent(cc.Sprite);
                 if (sprite) {
                     sprite.spriteFrame = columnSymbols[symbolIndex].spriteFrame;
@@ -123,6 +123,96 @@ export default class AssetsLoader extends cc.Component {
             }
         }
     }
-    
-    
+
+    async getVisibleSprite(symbols: cc.Node[][]) {
+        const visibleSprite: string[][] = []; // Explicitly define the type as a 2D array of strings
+
+        for (let i = 0; i < symbols.length; i++) {
+            const rollSymbols = symbols[i]; // Each roll (e.g., Roll_0, Roll_1, Roll_2)
+
+            if (!visibleSprite[i]) {
+                visibleSprite[i] = []; // Ensure the subarray exists
+            }
+
+            for (let j = 0; j < 3; j++) {
+                cc.log("In J");
+                const symbol = rollSymbols[j];
+                const sprite = symbol.getComponent(cc.Sprite);
+
+                if (sprite && sprite.spriteFrame) {
+                    visibleSprite[i].push(sprite.spriteFrame.name); // Push the name of the spriteFrame
+                }
+            }
+        }
+        const identifier = await this.mapSpriteIdentifier(visibleSprite);
+        return identifier;
+    }
+    async mapSpriteIdentifier(visibleSprite: string[][]) {
+        const visibleSpriteIdentifier: number[][] = [];
+        for (let i = 0; i < visibleSprite.length; i++) {
+            const symbolNames = visibleSprite[i]; // Each roll (e.g., Roll_0, Roll_1, Roll_2)
+            if (!visibleSpriteIdentifier[i]) {
+                visibleSpriteIdentifier[i] = []; // Ensure the subarray exists
+            }
+            symbolNames.forEach(name => {
+                const symbolData = this.symbolsData.find(symbol => symbol.name === name);
+                if (symbolData) {
+                    visibleSpriteIdentifier[i].push(symbolData.identifier);
+                }
+            });
+        }
+        return visibleSpriteIdentifier;
+    }
+    assignWinSymbols(symbols: cc.Node[][], result: cc.JsonAsset) {
+        const winningConfig = result.json.winningConfig;
+
+        // Loop through each roll in the winning configuration
+        Object.entries(winningConfig).forEach(([rollKey, identifiers]) => {
+            const rollIndex = parseInt(rollKey.split('_')[1]); // Extract roll index (e.g., "roll_0" -> 0)
+
+            // Ensure the roll index is within the symbols array bounds
+            if (rollIndex < symbols.length) {
+                const rollSymbols = symbols[rollIndex]; // Get the symbols for this roll
+                const winningIdentifiers = identifiers as number[]; // Get the winning identifiers for this roll
+
+                // Loop through the identifiers and assign the spriteFrame
+                for (let i = 0; i < winningIdentifiers.length; i++) {
+                    const identifier = winningIdentifiers[i];
+                    const symbol = rollSymbols[i]; // Get the corresponding symbol node
+                    const sprite = symbol.getComponent(cc.Sprite); // Get the sprite component
+
+                    // Find the matching SymbolAsset using the identifier
+                    const matchingSymbol = this.symbolsData.find((data) => data.identifier === identifier);
+
+                    if (sprite && matchingSymbol) {
+                        sprite.spriteFrame = matchingSymbol.spriteFrame; // Assign the spriteFrame
+                        // cc.log(`Updated SpriteFrame for roll_${rollIndex} index ${i} to ${matchingSymbol.name}`);
+                    } else {
+                        cc.warn(`No matching SymbolAsset found for identifier: ${identifier}`);
+                    }
+                }
+            }
+        });
+    }
+
+    randomSymbolAssign(symbols: cc.Node[]) {
+        let randomSymbolNumber = 3;
+        for (let i = 0; i < randomSymbolNumber; i++) {
+            const randomSymbolIndex = this.getRandomNumber(symbols.length - 1);
+            const randomSymbolDataIndex = this.getRandomNumber(this.symbolsData.length - 1);
+
+            const sprite = symbols[randomSymbolIndex].getComponent(cc.Sprite);
+            if (sprite) {
+                sprite.spriteFrame = this.symbolsData[randomSymbolDataIndex].spriteFrame;
+            }
+
+            // cc.log(`Randomized symbol at index: ${randomSymbolIndex} with data index: ${randomSymbolDataIndex}`);
+        }
+    }
+
+    public getRandomNumber(max: number): number {
+        return Math.floor(Math.random() * (max + 1));
+    }
+
+
 }

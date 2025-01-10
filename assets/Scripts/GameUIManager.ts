@@ -5,12 +5,14 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
+import AssetsLoader from "./AssetsLoader";
+import GameManager from "./GameManager";
 import GameStateManager, { GameState } from "./GameStateManager";
 
 const { ccclass, property } = cc._decorator;
 
 @ccclass
-export default class UIManager extends cc.Component {
+export default class GameUIManager extends cc.Component {
 
     //Buttons present in UI
     @property(cc.Button)
@@ -31,10 +33,12 @@ export default class UIManager extends cc.Component {
     //Limititations
     maxBetAmount = 5;
     minBetAmount = 1;
-
-    // LIFE-CYCLE CALLBACKS:
+    public static instance: GameUIManager = null;
 
     onLoad() {
+        if (!GameUIManager.instance) {
+            GameUIManager.instance = this;
+        }
         this.setInitialValue();
         this.startSpinButton.node.on(cc.Node.EventType.TOUCH_START, this.startRolling, this);
         this.increaseBetButton.node.on(
@@ -67,7 +71,11 @@ export default class UIManager extends cc.Component {
         } else if (currentBet <= totalCoin) {
             totalCoin -= currentBet;
             this.coinLabel.string = totalCoin.toString();
+            this.winAmountLabel.string = "0.00";
+            GameManager.instance.resetSymbolsPositions();
+            GameManager.instance.betAmountDuringRolling = currentBet;
             GameStateManager.currentGameState = GameState.Rolling;
+            this.disableGameButtons();
             cc.log("Starting Spin");
         }
     }
@@ -80,6 +88,9 @@ export default class UIManager extends cc.Component {
 
     // function to decease/increase bet
     private updateBet(betBehaviour: string) {
+        if(GameStateManager.currentGameState != GameState.Ready){
+            return;
+        }
         const currentBet = parseInt(this.betAmountLabel.string);
         if (betBehaviour === "increase") {
             if (currentBet < this.maxBetAmount) {
@@ -97,7 +108,7 @@ export default class UIManager extends cc.Component {
         this.increaseBetButton.interactable = false;
         this.decreaseBetButton.interactable = false;
     }
- //function to enable game buttons
+    //function to enable game buttons
     public enableGameButtons() {
         this.startSpinButton.interactable = true;
         this.increaseBetButton.interactable = true;
@@ -105,10 +116,11 @@ export default class UIManager extends cc.Component {
     }
 
     //function to add win amount to coin 
-    public addWinAmount(amount:number){
+    public addWinAmount(amount: number) {
         let totalCoin = parseInt(this.coinLabel.string);
         totalCoin += amount;
         this.coinLabel.string = totalCoin.toString();
+        this.winAmountLabel.string = amount.toFixed(2).toString();
     }
 
     start() {
