@@ -3477,7 +3477,9 @@
     },
     "_enabled": true,
     "alignMode": 1,
-    "_target": null,
+    "_target": {
+      "__id__": 1
+    },
     "_alignFlags": 45,
     "_left": -347,
     "_right": -347,
@@ -4930,7 +4932,9 @@
     },
     "_enabled": true,
     "alignMode": 1,
-    "_target": null,
+    "_target": {
+      "__id__": 1
+    },
     "_alignFlags": 45,
     "_left": 417.126,
     "_right": -517.126,
@@ -6334,9 +6338,6 @@
       "__id__": 1
     },
     "_enabled": true,
-    "assetsData": {
-      "__uuid__": "8f7078ef-ccfe-4477-9ea0-b84bc781184c"
-    },
     "rollBG": {
       "__id__": 7
     },

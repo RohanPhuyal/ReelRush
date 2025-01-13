@@ -34,12 +34,12 @@ export default class AssetsLoader extends cc.Component {
     }
 
     //function to execure the randomize symbols one by one
-    public async randomizeSymbols(assetsData: cc.JsonAsset): Promise<void> {
+    public async preloadAndRandomizeSymbols(assetsData: cc.JsonAsset, onProgress: (progress: number) => void): Promise<void> {
         await this.getAllAssetsFromJSON(assetsData);
-        await this.preloadAssets(this.allAssets, () => { cc.log("Loaded"); });
+        await this.preloadAssets(this.allAssets, () => { cc.log("Loaded"); }, onProgress);
         await this.shuffleArray(this.symbolsData);
-
     }
+    
 
 
     // Function to get assets from JSON
@@ -56,7 +56,9 @@ export default class AssetsLoader extends cc.Component {
         }
     }
     //function to preload assets and store in respective variables
-    async preloadAssets(allAssets: AssetItem[], cbPass: Function) {
+    async preloadAssets(allAssets: AssetItem[], cbPass: Function, onProgress: (progress: number) => void) {
+        const totalAssets = allAssets.length;
+        let loadedAssets = 0;
         const promises = allAssets.map(asset => {
             return new Promise<void>((resolve, reject) => {
                 cc.resources.preload(asset.path, StringToAssetType.stringToAssetType(asset.assetType), (err) => {
@@ -79,15 +81,19 @@ export default class AssetsLoader extends cc.Component {
                                 identifier: asset.identifier
                             });
                         }
+                        loadedAssets++;
+                        const progress = loadedAssets / totalAssets;
+                        onProgress(progress); // Notify progress
                         resolve();
                     });
                 });
             });
         });
-
+    
         await Promise.all(promises);
         cbPass();
     }
+    
 
     //function to shuffle the array
     async shuffleArray(array) {

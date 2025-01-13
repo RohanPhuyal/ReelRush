@@ -942,6 +942,12 @@
       "__id__": 1
     },
     "_enabled": true,
+    "assetsData": {
+      "__uuid__": "8f7078ef-ccfe-4477-9ea0-b84bc781184c"
+    },
+    "loadingProgress": {
+      "__id__": 22
+    },
     "_id": ""
   },
   {

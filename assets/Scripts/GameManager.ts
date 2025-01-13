@@ -8,9 +8,6 @@ const { ccclass, property } = cc._decorator;
 @ccclass
 export default class GameManager extends cc.Component {
 
-    //necessary nodes and jsonasset for assets and game
-    @property(cc.JsonAsset)
-    assetsData: cc.JsonAsset = null;
 
     @property(cc.Node)
     rollBG: cc.Node = null;
@@ -44,7 +41,6 @@ export default class GameManager extends cc.Component {
     //function to execute the necessary assets loading and positioning for game
     async startGameManager() {
         await this.setSymbolsPositions3x5(this.rollBG);
-        await AssetsLoader.instance.randomizeSymbols(this.assetsData);
         await AssetsLoader.instance.assignSymbolsFrame(this.rollSymbolsChilds);
         GameStateManager.currentGameState = GameState.Ready;
     }
