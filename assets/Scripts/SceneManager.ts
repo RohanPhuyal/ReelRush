@@ -9,7 +9,22 @@ const { ccclass, property } = cc._decorator;
 
 @ccclass
 export default class SceneManager extends cc.Component {
+    @property(cc.Prefab)
+    mainMenuScene: cc.Prefab = null;
+    @property(cc.Prefab)
+    loadingMenuScene: cc.Prefab = null;
+    @property(cc.Prefab)
+    gameScene: cc.Prefab = null;
     private currentScene: cc.Node = null;
+    public static instance: SceneManager = null;
+    onLoad() {
+        if (!SceneManager.instance) {
+            SceneManager.instance = this;
+        }
+        if (!this.currentScene) {
+            this.setNewScene(this.mainMenuScene);
+        }
+    }
     //function to set scene
     setNewScene(scenePrefab: cc.Prefab) {
         //check if current scene is not null
@@ -19,7 +34,7 @@ export default class SceneManager extends cc.Component {
 
             this.currentScene = cc.instantiate(scenePrefab);
             this.node.addChild(this.currentScene);
-        }else{
+        } else {
             this.currentScene = cc.instantiate(scenePrefab);
             this.node.addChild(this.currentScene);
         }

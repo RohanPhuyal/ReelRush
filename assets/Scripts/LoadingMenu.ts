@@ -5,25 +5,15 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
-import SceneManager from "./SceneManager";
-
 const {ccclass, property} = cc._decorator;
 
 @ccclass
-export default class MainMenuUI extends cc.Component {
-    
+export default class LoadingMenu extends cc.Component {
 
-    @property(cc.Button)
-    startButton: cc.Button = null;
     // LIFE-CYCLE CALLBACKS:
 
-    onLoad () {
-        this.startButton.node.on(cc.Node.EventType.TOUCH_START, this.startGame, this);
-    }
+    // onLoad () {}
 
-    startGame() {
-        SceneManager.instance.setNewScene(SceneManager.instance.loadingMenuScene);
-    }
     start () {
 
     }
