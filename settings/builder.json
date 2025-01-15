@@ -1,8 +1,11 @@
 {
   "title": "ReelRush",
   "packageName": "org.cocos2d.demo",
-  "startScene": "c36a95c6-2ff4-466f-85f6-3e226057c5fd",
-  "excludeScenes": [],
+  "startScene": "55df3b45-1950-4d15-bb86-984b48fecdba",
+  "excludeScenes": [
+    "cc19f004-4e41-47f5-8a70-7c2fd57583fe",
+    "c36a95c6-2ff4-466f-85f6-3e226057c5fd"
+  ],
   "orientation": {
     "landscapeRight": true,
     "landscapeLeft": true,
