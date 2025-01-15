@@ -5,6 +5,11 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
+import AssetsLoader from "./AssetsLoader";
+import AudioManager from "./AudioManager";
+import GameManager from "./GameManager";
+import GameUIManager from "./GameUIManager";
+
 const { ccclass, property } = cc._decorator;
 
 @ccclass
@@ -38,5 +43,19 @@ export default class SceneManager extends cc.Component {
             this.currentScene = cc.instantiate(scenePrefab);
             this.node.addChild(this.currentScene);
         }
+    }
+    exitToMenu() {
+        this.destroyAllInstances();
+        this.currentScene.removeFromParent();
+        this.currentScene.destroy();
+        this.currentScene = null;
+        this.setNewScene(this.mainMenuScene);
+    }
+
+    destroyAllInstances(){
+        AssetsLoader.destroyInstance();
+        GameManager.instance=null;
+        GameUIManager.instance=null;
+
     }
 }

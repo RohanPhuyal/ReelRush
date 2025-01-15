@@ -21,10 +21,6 @@ export default class AssetsLoader extends cc.Component {
     //Singleton instance (without attaching to node)
     private static _instance: AssetsLoader = null;
 
-    private constructor() {
-        super();
-        // Private constructor to prevent direct instantiation
-    }
 
     public static get instance(): AssetsLoader {
         if (!this._instance) {
@@ -33,6 +29,12 @@ export default class AssetsLoader extends cc.Component {
         return this._instance;
     }
 
+    public static destroyInstance(): void {
+        if (this._instance) {
+            this._instance = null; // Clear the instance
+        }
+    }
+    
     //function to execure the randomize symbols one by one
     public async preloadAndRandomizeSymbols(assetsData: cc.JsonAsset, onProgress: (progress: number) => void): Promise<void> {
         await this.getAllAssetsFromJSON(assetsData);

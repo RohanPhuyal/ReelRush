@@ -1,6 +1,6 @@
 import AssetsLoader from "./AssetsLoader";
+import AudioManager from "./AudioManager";
 import GameStateManager, { GameState } from "./GameStateManager";
-import GameUIManager from "./GameUIManager";
 import UIManager from "./GameUIManager";
 
 const { ccclass, property } = cc._decorator;
@@ -18,34 +18,54 @@ export default class GameManager extends cc.Component {
 
 
     @property(cc.Node)
-    winLinesParenet: cc.Node = null;
+    winLinesParent: cc.Node = null;
 
     rollSymbolsChilds: cc.Node[] = [];
 
     betAmountDuringRolling = null;
 
+
+    //migrating from rollpanel
+    private elapsedTime = 0;
+    public symbols: cc.Node[][] = [];
+    private rollSpeed = 2500;
+    @property(cc.JsonAsset)
+    resultJson: cc.JsonAsset = null
     // symbols: cc.Node[] = [];
 
     //singleton
     public static instance: GameManager = null;
+    public static isReady = false;
 
-    onLoad() {
+    async onLoad() {
+        cc.log("GameManager onLoad executed");
         //singleton
         if (!GameManager.instance) {
             GameManager.instance = this;
         }
-        this.rollSymbolsChilds = this.rollSymbols.children;
+        
+        await this.startGameManager();
+        GameManager.isReady = true;
+        cc.log("LOADING GM");
+        cc.log(this.winLinesParent)
 
     }
 
     //function to execute the necessary assets loading and positioning for game
     async startGameManager() {
+        this.rollSymbolsChilds = this.rollSymbols.children;
+        // Initialize the symbols array as a 2D array
+        this.rollSymbolsChilds.forEach((rollNode) => {
+            this.symbols.push([...rollNode.children]); // Use spread operator to ensure a proper 2D array
+        });
         await this.setSymbolsPositions3x5(this.rollBG);
         await AssetsLoader.instance.assignSymbolsFrame(this.rollSymbolsChilds);
         GameStateManager.currentGameState = GameState.Ready;
     }
     async resetSymbolsPositions() {
-        this.clampPositions = [];
+        cc.log("RESET GM");
+        cc.log(this.rollBG);
+        this.clampPoints = [];
         await this.disableWinLineNodes();
         await this.setSymbolsPositions3x5(this.rollBG);
     }
@@ -82,7 +102,7 @@ export default class GameManager extends cc.Component {
     }
     botPosition = 0;
     topPosition = 0;
-    clampPositions = [];
+    clampPoints = [];
     //function to set symbols positions in 3x5 grid size
     public async setSymbolsPositions3x5(node: cc.Node): Promise<void> {
         return new Promise((resolve) => {
@@ -114,7 +134,7 @@ export default class GameManager extends cc.Component {
 
                     if (col === 0) {
                         cc.log("Col: " + col);
-                        this.clampPositions.push(yPos);
+                        this.clampPoints.push(yPos);
                     }
                     // Set symbol position in its column
                     rollSymbols[row].setPosition(new cc.Vec2(xPos, yPos));
@@ -124,6 +144,81 @@ export default class GameManager extends cc.Component {
             resolve();
         });
     }
+
+
+    private rollingDown(dt) {
+        this.elapsedTime += dt;
+        // Iterate through each roll (row in the 2D array)
+        for (let i = 0; i < this.symbols.length; i++) {
+            const rollSymbols = this.symbols[i];
+
+            // Iterate through each symbol in the roll
+            for (let j = 0; j < rollSymbols.length; j++) {
+                const symbol = rollSymbols[j];
+
+                // Move the symbol down
+                symbol.position = symbol.position.add(new cc.Vec3(0, -dt * this.rollSpeed, 0));
+
+                // Check if the symbol moves past the bottom boundary
+                if (symbol.position.y <= GameManager.instance.botPosition) {
+                    // Move the symbol to the top
+                    symbol.position = new cc.Vec3(symbol.position.x, GameManager.instance.topPosition, symbol.position.z);
+
+                    // Update the 2D array to reflect the new order
+                    const movedSymbol = rollSymbols.splice(j, 1)[0]; // Remove the symbol from the current position
+                    rollSymbols.push(movedSymbol); // Add the symbol to the end of the roll array
+
+                    // Adjust the index to account for the removed element
+                    j--;
+                }
+            }
+        }
+        if (this.elapsedTime >= 5) {
+            GameStateManager.currentGameState = GameState.Slowdown;
+            this.elapsedTime = 0;
+        }
+    }
+
+    async rollingDownSlow() {
+        const clampPoints = this.clampPoints;
+
+        for (let i = 0; i < this.symbols.length; i++) {
+            const rollSymbols = this.symbols[i]; // Each roll (e.g., Roll_0, Roll_1, Roll_2)
+
+            for (let j = 0; j < rollSymbols.length; j++) {
+                const symbol = rollSymbols[j];
+                const currentY = symbol.position.y;
+
+                if (currentY < clampPoints[0]) {
+                    // If the symbol goes below the lowest clamp point, wrap it to the top
+                    symbol.position = new cc.Vec3(symbol.position.x, clampPoints[clampPoints.length - 1], symbol.position.z);
+
+                    // Update the 2D array to reflect the new order
+                    const movedSymbol = rollSymbols.splice(j, 1)[0]; // Remove the symbol from the current position
+                    rollSymbols.push(movedSymbol); // Add the symbol to the end of the roll array
+
+                    // Adjust the index to account for the removed element
+                    j--;
+                } else {
+                    // Find the closest clamp point that is less than or equal to the current Y position
+                    const targetY = clampPoints.reduce((closest, point) => {
+                        return currentY >= point && point > closest ? point : closest;
+                    }, clampPoints[0]);
+
+                    // Tween the symbol to the target position
+                    cc.tween(symbol)
+                        .to(0.1, { position: cc.v3(symbol.position.x, targetY, symbol.position.z) }, { easing: 'cubicOut' })
+                        .start();
+                }
+            }
+        }
+        AssetsLoader.instance.assignWinSymbols(this.symbols, this.resultJson);
+        GameStateManager.currentGameState = GameState.Result;
+        AudioManager.instance.stopAudio();
+        cc.log(this.symbols);
+        await this.calculateResult(this.symbols);
+    }
+
 
     async calculateResult(symbols: cc.Node[][]) {
         if (GameStateManager.currentGameState === GameState.Result) {
@@ -144,17 +239,17 @@ export default class GameManager extends cc.Component {
     }
     async addWinAmount(winningLinesLength: number) {
         if (winningLinesLength > 0) {
-            let winAmount=0;
-            if(this.betAmountDuringRolling === 1){
-                winAmount = this.betAmountDuringRolling*winningLinesLength;
-            }else if(this.betAmountDuringRolling === 2){
-                winAmount = this.betAmountDuringRolling*winningLinesLength*2;
-            }else if(this.betAmountDuringRolling === 3){
-                winAmount = this.betAmountDuringRolling*winningLinesLength*3;
-            }else if(this.betAmountDuringRolling === 4){
-                winAmount = this.betAmountDuringRolling*winningLinesLength*4;
-            }else if(this.betAmountDuringRolling === 5){
-                winAmount = this.betAmountDuringRolling*winningLinesLength*5;
+            let winAmount = 0;
+            if (this.betAmountDuringRolling === 1) {
+                winAmount = this.betAmountDuringRolling * winningLinesLength;
+            } else if (this.betAmountDuringRolling === 2) {
+                winAmount = this.betAmountDuringRolling * winningLinesLength * 2;
+            } else if (this.betAmountDuringRolling === 3) {
+                winAmount = this.betAmountDuringRolling * winningLinesLength * 3;
+            } else if (this.betAmountDuringRolling === 4) {
+                winAmount = this.betAmountDuringRolling * winningLinesLength * 4;
+            } else if (this.betAmountDuringRolling === 5) {
+                winAmount = this.betAmountDuringRolling * winningLinesLength * 5;
             }
             UIManager.instance.addWinAmount(winAmount);
         }
@@ -195,7 +290,7 @@ export default class GameManager extends cc.Component {
         // Loop through each winning line index and enable the corresponding win line node
         for (let i = 0; i < winningLines.length; i++) {
             const lineIndex = winningLines[i];
-            const lineNode = this.winLinesParenet.children[lineIndex];
+            const lineNode = this.winLinesParent.children[lineIndex];
 
             // Enable the win line node corresponding to the winning line index
             lineNode.active = true;
@@ -216,10 +311,17 @@ export default class GameManager extends cc.Component {
     }
     async disableWinLineNodes() {
         // Ensure that all win line nodes are initially disabled
-        this.winLinesParenet.children.forEach(child => {
+        this.winLinesParent.children.forEach(child => {
             child.active = false;
         });
     }
 
+    update(dt) {
+        if (GameStateManager.currentGameState === GameState.Rolling && this.elapsedTime <= 5) {
+            this.rollingDown(dt);
+        } else if (GameStateManager.currentGameState === GameState.Slowdown) {
+            this.rollingDownSlow();
+        }
+    }
 
 }

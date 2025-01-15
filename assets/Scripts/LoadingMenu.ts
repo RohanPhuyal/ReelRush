@@ -34,7 +34,7 @@ export default class LoadingMenu extends cc.Component {
                 })
                 .start();
         };
-
+    
         await AssetsLoader.instance.preloadAndRandomizeSymbols(this.assetsData, updateProgress);
     }
 }

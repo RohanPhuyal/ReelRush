@@ -9,6 +9,7 @@ import AssetsLoader from "./AssetsLoader";
 import AudioManager from "./AudioManager";
 import GameManager from "./GameManager";
 import GameStateManager, { GameState } from "./GameStateManager";
+import SceneManager from "./SceneManager";
 
 const { ccclass, property } = cc._decorator;
 
@@ -16,6 +17,12 @@ const { ccclass, property } = cc._decorator;
 export default class GameUIManager extends cc.Component {
 
     //Buttons present in UI
+    @property(cc.Button)
+    moreButton: cc.Button = null;
+    @property(cc.Button)
+    soundButton: cc.Button = null;
+    @property(cc.Button)
+    homeButton: cc.Button = null;
     @property(cc.Button)
     startSpinButton: cc.Button = null;
     @property(cc.Button)
@@ -42,6 +49,9 @@ export default class GameUIManager extends cc.Component {
         }
         this.setInitialValue();
         this.startSpinButton.node.on(cc.Node.EventType.TOUCH_START, this.startRolling, this);
+        this.moreButton.node.on(cc.Node.EventType.TOUCH_START, this.onMoreButtonPressed, this);
+        this.soundButton.node.on(cc.Node.EventType.TOUCH_START, this.onSoundButtonPressed, this);
+        this.homeButton.node.on(cc.Node.EventType.TOUCH_START, this.onHomeButtonPressed, this);
         this.increaseBetButton.node.on(
             cc.Node.EventType.TOUCH_START,
             () => this.updateBet("increase"),
@@ -56,16 +66,45 @@ export default class GameUIManager extends cc.Component {
 
 
     }
-    //function to start rolling
-    private startRolling() {
-        
+    onSoundButtonPressed(){
+        AudioManager.instance.muteAudio();
+        if(AudioManager.instance.audioSource.mute){
+            this.soundButton.interactable=false;
+        }else{
+            this.soundButton.interactable=true;
+        }
+    }
+    private onMoreButtonPressed() {
         AudioManager.instance.playButtonAudio();
+        if (this.homeButton.node.active) {
+            this.homeButton.node.active = false;
+        } else {
+            this.homeButton.node.active = true;
+        }
+    }
+    private onHomeButtonPressed() {
         //check game status
         if (GameStateManager.currentGameState != GameState.Ready) {
             cc.log("Game is not ready");
             return;
         }
 
+        AudioManager.instance.playButtonAudio();
+        GameManager.instance.symbols = [];
+        GameStateManager.currentGameState = GameState.Start;
+        AudioManager.instance.stopAudio();
+        SceneManager.instance.exitToMenu();
+    }
+    //function to start rolling
+    private startRolling() {
+
+        //check game status
+        if (GameStateManager.currentGameState != GameState.Ready) {
+            cc.log("Game is not ready");
+            return;
+        }
+
+        AudioManager.instance.playButtonAudio();
         const currentBet = parseInt(this.betAmountLabel.string);
         let totalCoin = parseInt(this.coinLabel.string);
         if (currentBet > totalCoin) {
@@ -92,10 +131,10 @@ export default class GameUIManager extends cc.Component {
 
     // function to decease/increase bet
     private updateBet(betBehaviour: string) {
-        AudioManager.instance.playButtonAudio();
-        if(GameStateManager.currentGameState != GameState.Ready){
+        if (GameStateManager.currentGameState != GameState.Ready) {
             return;
         }
+        AudioManager.instance.playButtonAudio();
         const currentBet = parseInt(this.betAmountLabel.string);
         if (betBehaviour === "increase") {
             if (currentBet < this.maxBetAmount) {
@@ -112,12 +151,16 @@ export default class GameUIManager extends cc.Component {
         this.startSpinButton.interactable = false;
         this.increaseBetButton.interactable = false;
         this.decreaseBetButton.interactable = false;
+
+        this.homeButton.interactable = false;
     }
     //function to enable game buttons
     public enableGameButtons() {
         this.startSpinButton.interactable = true;
         this.increaseBetButton.interactable = true;
         this.decreaseBetButton.interactable = true;
+
+        this.homeButton.interactable = true;
     }
 
     //function to add win amount to coin 
