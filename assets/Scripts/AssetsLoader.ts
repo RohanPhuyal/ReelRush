@@ -132,6 +132,7 @@ export default class AssetsLoader extends cc.Component {
         }
     }
 
+    //function to get visible sprite (not masked)
     async getVisibleSprite(symbols: cc.Node[][]) {
         const visibleSprite: string[][] = []; // Explicitly define the type as a 2D array of strings
 
@@ -155,6 +156,7 @@ export default class AssetsLoader extends cc.Component {
         const identifier = await this.mapSpriteIdentifier(visibleSprite);
         return identifier;
     }
+    //mapping assets indentifier from their name
     async mapSpriteIdentifier(visibleSprite: string[][]) {
         const visibleSpriteIdentifier: number[][] = [];
         for (let i = 0; i < visibleSprite.length; i++) {
@@ -171,6 +173,7 @@ export default class AssetsLoader extends cc.Component {
         }
         return visibleSpriteIdentifier;
     }
+    //change the sprite for win assets
     assignWinSymbols(symbols: cc.Node[][], result: cc.JsonAsset) {
         const winningConfig = result.json.winningConfig;
 
@@ -203,6 +206,7 @@ export default class AssetsLoader extends cc.Component {
         });
     }
 
+    //randomizing sprite when spinning (not used)
     randomSymbolAssign(symbols: cc.Node[]) {
         let randomSymbolNumber = 3;
         for (let i = 0; i < randomSymbolNumber; i++) {
@@ -218,6 +222,7 @@ export default class AssetsLoader extends cc.Component {
         }
     }
 
+    //function to get random number between 0 and passed argument
     public getRandomNumber(max: number): number {
         return Math.floor(Math.random() * (max + 1));
     }

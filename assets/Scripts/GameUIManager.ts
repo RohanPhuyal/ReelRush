@@ -47,6 +47,7 @@ export default class GameUIManager extends cc.Component {
         if (!GameUIManager.instance) {
             GameUIManager.instance = this;
         }
+        this.coinLabel.string = SceneManager.coinAmount.toString();
         this.setInitialValue();
         this.startSpinButton.node.on(cc.Node.EventType.TOUCH_START, this.startRolling, this);
         this.moreButton.node.on(cc.Node.EventType.TOUCH_START, this.onMoreButtonPressed, this);
@@ -118,6 +119,7 @@ export default class GameUIManager extends cc.Component {
         } else if (currentBet <= totalCoin) {
             totalCoin -= currentBet;
             this.coinLabel.string = totalCoin.toString();
+            SceneManager.instance.changeCoinAmount(totalCoin);
             this.winAmountLabel.string = "0.00";
             GameManager.instance.resetSymbolsPositions();
             GameManager.instance.betAmountDuringRolling = currentBet;
@@ -173,6 +175,7 @@ export default class GameUIManager extends cc.Component {
         let totalCoin = parseInt(this.coinLabel.string);
         totalCoin += amount;
         this.coinLabel.string = totalCoin.toString();
+        SceneManager.instance.changeCoinAmount(totalCoin);
         this.winAmountLabel.string = amount.toFixed(2).toString();
     }
 

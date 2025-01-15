@@ -22,13 +22,25 @@ export default class SceneManager extends cc.Component {
     gameScene: cc.Prefab = null;
     private currentScene: cc.Node = null;
     public static instance: SceneManager = null;
+    public static coinAmount: number = 30;
     onLoad() {
+        if(!localStorage.getItem('coin')){
+            cc.log("no value found");
+            localStorage.setItem('coin', SceneManager.coinAmount.toString());
+        }else{
+            cc.log("COIN FOUND");
+            SceneManager.coinAmount = parseInt(localStorage.getItem('coin'));
+        }
         if (!SceneManager.instance) {
             SceneManager.instance = this;
         }
         if (!this.currentScene) {
             this.setNewScene(this.mainMenuScene);
         }
+    }
+    changeCoinAmount(totalCoin: number){
+        SceneManager.coinAmount = totalCoin;
+        localStorage.setItem('coin', SceneManager.coinAmount.toString());
     }
     //function to set scene
     setNewScene(scenePrefab: cc.Prefab) {

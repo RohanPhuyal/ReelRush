@@ -16,9 +16,13 @@ export default class MainMenuUI extends cc.Component {
 
     @property(cc.Button)
     startButton: cc.Button = null;
+
+    @property(cc.Label)
+    coinLabel:cc.Label = null;
     // LIFE-CYCLE CALLBACKS:
 
     onLoad () {
+        this.coinLabel.string = SceneManager.coinAmount.toString();
         this.startButton.node.on(cc.Node.EventType.TOUCH_START, this.startGame, this);
     }
 
