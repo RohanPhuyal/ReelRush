@@ -81,6 +81,11 @@ export default class GameUIManager extends cc.Component {
         } else {
             this.homeButton.node.active = true;
         }
+        if(this.soundButton.node.active){
+            this.soundButton.node.active = false;
+        }else{
+            this.soundButton.node.active = true;
+        }
     }
     private onHomeButtonPressed() {
         //check game status
