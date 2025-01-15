@@ -144,7 +144,6 @@ export default class AssetsLoader extends cc.Component {
             }
 
             for (let j = 0; j < 3; j++) {
-                cc.log("In J");
                 const symbol = rollSymbols[j];
                 const sprite = symbol.getComponent(cc.Sprite);
 
@@ -175,7 +174,8 @@ export default class AssetsLoader extends cc.Component {
     }
     //change the sprite for win assets
     assignWinSymbols(symbols: cc.Node[][], result: cc.JsonAsset) {
-        const winningConfig = result.json.winningConfig;
+        const randomWinValue = this.getRandomNumber(result.json.winningConfig.length);
+        const winningConfig = result.json.winningConfig[randomWinValue];
 
         // Loop through each roll in the winning configuration
         Object.entries(winningConfig).forEach(([rollKey, identifiers]) => {
@@ -224,8 +224,8 @@ export default class AssetsLoader extends cc.Component {
 
     //function to get random number between 0 and passed argument
     public getRandomNumber(max: number): number {
-        return Math.floor(Math.random() * (max + 1));
+        return Math.floor(Math.random() * max); // Handles 0 to max - 1 correctly
     }
-
+    
 
 }

@@ -36,19 +36,14 @@ export default class GameManager extends cc.Component {
 
     //singleton
     public static instance: GameManager = null;
-    public static isReady = false;
 
     async onLoad() {
-        cc.log("GameManager onLoad executed");
         //singleton
         if (!GameManager.instance) {
             GameManager.instance = this;
         }
         
         await this.startGameManager();
-        GameManager.isReady = true;
-        cc.log("LOADING GM");
-        cc.log(this.winLinesParent)
 
     }
 
@@ -64,8 +59,6 @@ export default class GameManager extends cc.Component {
         GameStateManager.currentGameState = GameState.Ready;
     }
     async resetSymbolsPositions() {
-        cc.log("RESET GM");
-        cc.log(this.rollBG);
         this.clampPoints = [];
         await this.disableWinLineNodes();
         await this.setSymbolsPositions3x5(this.rollBG);
@@ -134,7 +127,6 @@ export default class GameManager extends cc.Component {
                     const yPos = bottomBoundary + verticalGap * (row + 0.5);
 
                     if (col === 0) {
-                        cc.log("Col: " + col);
                         this.clampPoints.push(yPos);
                     }
                     // Set symbol position in its column
@@ -216,7 +208,6 @@ export default class GameManager extends cc.Component {
         AssetsLoader.instance.assignWinSymbols(this.symbols, this.resultJson);
         GameStateManager.currentGameState = GameState.Result;
         AudioManager.instance.stopAudio();
-        cc.log(this.symbols);
         await this.calculateResult(this.symbols);
     }
 
@@ -228,7 +219,6 @@ export default class GameManager extends cc.Component {
             if (winningLines && winningLines.length > 0) {
 
                 this.addWinAmount(winningLines.length);
-                cc.log(winningLines);
                 // Show the winning lines one by one
                 await this.showWinningLines(winningLines);
             }
