@@ -78,10 +78,10 @@
     "_active": true,
     "_components": [
       {
-        "__id__": 8
+        "__id__": 10
       },
       {
-        "__id__": 9
+        "__id__": 11
       }
     ],
     "_prefab": null,
@@ -245,6 +245,12 @@
       },
       {
         "__id__": 7
+      },
+      {
+        "__id__": 8
+      },
+      {
+        "__id__": 9
       }
     ],
     "_prefab": null,
@@ -340,6 +346,42 @@
       "__uuid__": "0691fc95-4193-44e9-a9ce-9b7f76ecae58"
     },
     "_id": "81MJ6qbQdDVaFxSAX6aoMb"
+  },
+  {
+    "__type__": "88fa3ZsJNZKbpUM9Axl6aJW",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 5
+    },
+    "_enabled": true,
+    "audioSource": {
+      "__id__": 9
+    },
+    "buttonAudio": {
+      "__uuid__": "848216eb-3e6b-432e-a1f1-6dc5f3421efe"
+    },
+    "rollingAudio": {
+      "__uuid__": "d62a3ff8-750b-45e2-a539-9d05eec1fe87"
+    },
+    "_id": "a71+N6jYJFobLRTN1RtYLd"
+  },
+  {
+    "__type__": "cc.AudioSource",
+    "_name": "",
+    "_objFlags": 0,
+    "node": {
+      "__id__": 5
+    },
+    "_enabled": true,
+    "_clip": null,
+    "_volume": 1,
+    "_mute": false,
+    "_loop": false,
+    "_firstlyEnabled": true,
+    "playOnLoad": false,
+    "preload": false,
+    "_id": "15Jgi/t/RP/bVudXRtpdxa"
   },
   {
     "__type__": "cc.Canvas",

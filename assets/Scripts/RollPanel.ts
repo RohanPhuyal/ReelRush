@@ -6,6 +6,7 @@
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
 import AssetsLoader from "./AssetsLoader";
+import AudioManager from "./AudioManager";
 import GameManager from "./GameManager";
 import GameStateManager, { GameState } from "./GameStateManager";
 
@@ -21,6 +22,8 @@ export default class NewClass extends cc.Component {
     private rollSymbolsChilds: cc.Node[] = [];
     private symbols: cc.Node[][] = [];
     private clampPoint: number[] = [];
+
+    private rollSpeed = 2500;
 
     @property(cc.JsonAsset)
     resultJson: cc.JsonAsset = null;
@@ -49,7 +52,7 @@ export default class NewClass extends cc.Component {
                 const symbol = rollSymbols[j];
 
                 // Move the symbol down
-                symbol.position = symbol.position.add(new cc.Vec3(0, -dt * 2500, 0));
+                symbol.position = symbol.position.add(new cc.Vec3(0, -dt * this.rollSpeed, 0));
 
                 // Check if the symbol moves past the bottom boundary
                 if (symbol.position.y <= GameManager.instance.botPosition) {
@@ -106,6 +109,7 @@ export default class NewClass extends cc.Component {
         }
         AssetsLoader.instance.assignWinSymbols(this.symbols, this.resultJson);
         GameStateManager.currentGameState = GameState.Result;
+        AudioManager.instance.stopAudio();
         cc.log(this.symbols);
         await GameManager.instance.calculateResult(this.symbols);
     }

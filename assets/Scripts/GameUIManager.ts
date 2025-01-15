@@ -6,6 +6,7 @@
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
 import AssetsLoader from "./AssetsLoader";
+import AudioManager from "./AudioManager";
 import GameManager from "./GameManager";
 import GameStateManager, { GameState } from "./GameStateManager";
 
@@ -57,6 +58,8 @@ export default class GameUIManager extends cc.Component {
     }
     //function to start rolling
     private startRolling() {
+        
+        AudioManager.instance.playButtonAudio();
         //check game status
         if (GameStateManager.currentGameState != GameState.Ready) {
             cc.log("Game is not ready");
@@ -75,6 +78,7 @@ export default class GameUIManager extends cc.Component {
             GameManager.instance.resetSymbolsPositions();
             GameManager.instance.betAmountDuringRolling = currentBet;
             GameStateManager.currentGameState = GameState.Rolling;
+            AudioManager.instance.playRollingAudio();
             this.disableGameButtons();
             cc.log("Starting Spin");
         }
@@ -88,6 +92,7 @@ export default class GameUIManager extends cc.Component {
 
     // function to decease/increase bet
     private updateBet(betBehaviour: string) {
+        AudioManager.instance.playButtonAudio();
         if(GameStateManager.currentGameState != GameState.Ready){
             return;
         }

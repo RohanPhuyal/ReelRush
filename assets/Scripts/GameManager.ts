@@ -29,7 +29,7 @@ export default class GameManager extends cc.Component {
     //singleton
     public static instance: GameManager = null;
 
-    async onLoad() {
+    onLoad() {
         //singleton
         if (!GameManager.instance) {
             GameManager.instance = this;
