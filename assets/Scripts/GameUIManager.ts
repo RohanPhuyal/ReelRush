@@ -7,6 +7,7 @@
 
 import AssetsLoader from "./AssetsLoader";
 import AudioManager from "./AudioManager";
+import { audioType } from "./GameConfig";
 import GameManager from "./GameManager";
 import GameStateManager, { GameState } from "./GameStateManager";
 import SceneManager from "./SceneManager";
@@ -76,7 +77,7 @@ export default class GameUIManager extends cc.Component {
         }
     }
     private onMoreButtonPressed() {
-        AudioManager.instance.playButtonAudio();
+        AudioManager.instance.playAudio(audioType.ui);
         if (this.homeButton.node.active) {
             this.homeButton.node.active = false;
         } else {
@@ -95,7 +96,7 @@ export default class GameUIManager extends cc.Component {
             return;
         }
 
-        AudioManager.instance.playButtonAudio();
+        AudioManager.instance.playAudio(audioType.ui);
         GameManager.instance.symbols = [];
         GameStateManager.currentGameState = GameState.Start;
         AudioManager.instance.stopAudio();
@@ -110,7 +111,7 @@ export default class GameUIManager extends cc.Component {
             return;
         }
 
-        AudioManager.instance.playButtonAudio();
+        AudioManager.instance.playAudio(audioType.ui);
         const currentBet = parseInt(this.betAmountLabel.string);
         let totalCoin = parseInt(this.coinLabel.string);
         if (currentBet > totalCoin) {
@@ -124,7 +125,7 @@ export default class GameUIManager extends cc.Component {
             GameManager.instance.resetSymbolsPositions();
             GameManager.instance.betAmountDuringRolling = currentBet;
             GameStateManager.currentGameState = GameState.Rolling;
-            AudioManager.instance.playRollingAudio();
+            AudioManager.instance.playAudio(audioType.rolling);
             this.disableGameButtons();
             cc.log("Starting Spin");
         }
@@ -141,7 +142,7 @@ export default class GameUIManager extends cc.Component {
         if (GameStateManager.currentGameState != GameState.Ready) {
             return;
         }
-        AudioManager.instance.playButtonAudio();
+        AudioManager.instance.playAudio(audioType.bet);
         const currentBet = parseInt(this.betAmountLabel.string);
         if (betBehaviour === "increase") {
             if (currentBet < this.maxBetAmount) {

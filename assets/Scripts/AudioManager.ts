@@ -7,6 +7,7 @@
 
 const { ccclass, property } = cc._decorator;
 
+import { audioType } from "./GameConfig";
 @ccclass
 export default class AudioManager extends cc.Component {
 
@@ -17,18 +18,28 @@ export default class AudioManager extends cc.Component {
     buttonAudio: cc.AudioClip = null;
     @property(cc.AudioClip)
     rollingAudio: cc.AudioClip = null;
+    @property(cc.AudioClip)
+    betAudio: cc.AudioClip = null;
     // LIFE-CYCLE CALLBACKS:
     public static instance: AudioManager = null;
-    playButtonAudio() {
-        this.audioSource.clip = this.buttonAudio;
-        this.audioSource.loop = false;
-        this.audioSource.play();
+    playAudio(audio: number) {
+        if (audio === audioType.ui) {
+            this.audioSource.clip = this.buttonAudio;
+            this.audioSource.loop = false;
+            this.audioSource.play();
+        }
+        if (audio === audioType.bet) {
+            this.audioSource.clip = this.betAudio;
+            this.audioSource.loop = false;
+            this.audioSource.play();
+        }
+        if (audio === audioType.rolling) {
+            this.audioSource.clip = this.rollingAudio;
+            this.audioSource.loop = true;
+            this.audioSource.play();
+        }
     }
-    playRollingAudio() {
-        this.audioSource.clip = this.buttonAudio;
-        this.audioSource.loop = true;
-        this.audioSource.play();
-    }
+
     stopAudio() {
         this.audioSource.stop();
     }

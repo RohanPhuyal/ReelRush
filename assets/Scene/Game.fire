@@ -362,7 +362,10 @@
       "__uuid__": "848216eb-3e6b-432e-a1f1-6dc5f3421efe"
     },
     "rollingAudio": {
-      "__uuid__": "d62a3ff8-750b-45e2-a539-9d05eec1fe87"
+      "__uuid__": "e13e8333-c60f-4ce0-8bde-e7da2bb70fab"
+    },
+    "betAudio": {
+      "__uuid__": "5b5cbc3f-0525-4ef7-bd4f-64d7a95e16c0"
     },
     "_id": "a71+N6jYJFobLRTN1RtYLd"
   },
@@ -374,7 +377,9 @@
       "__id__": 5
     },
     "_enabled": true,
-    "_clip": null,
+    "_clip": {
+      "__uuid__": "d62a3ff8-750b-45e2-a539-9d05eec1fe87"
+    },
     "_volume": 1,
     "_mute": false,
     "_loop": false,

@@ -24,10 +24,14 @@ export interface SymbolAsset {
     identifier: number;
 }
 
-export const winLines = [
+export const winLine = [
     [[0, 0], [1, 0], [2, 0]], // Bottom horizontal line
     [[0, 1], [1, 1], [2, 1]], // Middle horizontal line
     [[0, 2], [1, 2], [2, 2]], // Top horizontal line
     [[0, 0], [1, 1], [2, 2]], // Bot left to top right diagoal
     [[0, 2], [1, 1], [2, 0]]  // bot right to top left diagonal
 ];
+
+export const audioType = {
+    "bet":0, "ui":1, "rolling":2
+}

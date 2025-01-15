@@ -6,6 +6,7 @@
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
 import AudioManager from "./AudioManager";
+import { audioType } from "./GameConfig";
 import SceneManager from "./SceneManager";
 
 const {ccclass, property} = cc._decorator;
@@ -28,7 +29,7 @@ export default class MainMenuUI extends cc.Component {
 
     startGame() {
         SceneManager.instance.setNewScene(SceneManager.instance.loadingMenuScene);
-        AudioManager.instance.playButtonAudio();
+        AudioManager.instance.playAudio(audioType.ui);
     }
     start () {
 

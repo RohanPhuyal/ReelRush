@@ -1,5 +1,6 @@
 import AssetsLoader from "./AssetsLoader";
 import AudioManager from "./AudioManager";
+import { winLine } from "./GameConfig";
 import GameStateManager, { GameState } from "./GameStateManager";
 import UIManager from "./GameUIManager";
 
@@ -256,13 +257,7 @@ export default class GameManager extends cc.Component {
     }
     // This function will check which lines are winning
     async checkWinLines(spriteIdentifier) {
-        const winLines = [
-            [[0, 0], [1, 0], [2, 0]], // Bottom horizontal line
-            [[0, 1], [1, 1], [2, 1]], // Middle horizontal line
-            [[0, 2], [1, 2], [2, 2]], // Top horizontal line
-            [[0, 0], [1, 1], [2, 2]], // Bot left to top right diagonal
-            [[0, 2], [1, 1], [2, 0]]  // Bot right to top left diagonal
-        ];
+        const winLines = winLine;
 
         const winningLines: number[] = [];
 
