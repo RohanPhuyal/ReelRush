@@ -39,6 +39,7 @@ export default class GameManager extends cc.Component {
     public isFreeGameWin =false;
     @property(cc.Node)
     freeGame: cc.Node = null;
+    isFreeGameRunning = false;
     //singleton
     public static instance: GameManager = null;
 
@@ -234,12 +235,16 @@ export default class GameManager extends cc.Component {
                 this.freeGame.active=false;
                 
             }
+            if(this.isFreeGameRunning&&FreeGame.instance.currentFGNumber>=FreeGame.instance.totalFGNumber){
+                await FreeGame.instance.onFreeGamesOver();
+            }
             GameStateManager.currentGameState = GameState.Ready;
             UIManager.instance.enableGameButtons();
         } else {
             return;
         }
     }
+    public totalFreeWinAmount: number = 0;
     async addWinAmount(winningLinesLength: number) {
         if (winningLinesLength > 0) {
             let winAmount = 0;
@@ -253,6 +258,9 @@ export default class GameManager extends cc.Component {
                 winAmount = this.betAmountDuringRolling * winningLinesLength * 4;
             } else if (this.betAmountDuringRolling === 5) {
                 winAmount = this.betAmountDuringRolling * winningLinesLength * 5;
+            }
+            if(this.isFreeGameRunning){
+                this.totalFreeWinAmount+=winAmount;
             }
             UIManager.instance.addWinAmount(winAmount);
         }

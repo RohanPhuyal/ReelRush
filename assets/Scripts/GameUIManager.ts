@@ -7,6 +7,7 @@
 
 import AssetsLoader from "./AssetsLoader";
 import AudioManager from "./AudioManager";
+import FreeGame from "./FreeGame";
 import { audioType } from "./GameConfig";
 import GameManager from "./GameManager";
 import GameStateManager, { GameState } from "./GameStateManager";
@@ -72,7 +73,7 @@ export default class GameUIManager extends cc.Component {
         AudioManager.instance.muteAudio();
         this.soundButton.interactable = !AudioManager.instance.mute;
     }
-    
+
     private onMoreButtonPressed() {
         AudioManager.instance.playAudio(audioType.ui);
         if (this.homeButton.node.active) {
@@ -80,9 +81,9 @@ export default class GameUIManager extends cc.Component {
         } else {
             this.homeButton.node.active = true;
         }
-        if(this.soundButton.node.active){
+        if (this.soundButton.node.active) {
             this.soundButton.node.active = false;
-        }else{
+        } else {
             this.soundButton.node.active = true;
         }
     }
@@ -111,21 +112,32 @@ export default class GameUIManager extends cc.Component {
         AudioManager.instance.playAudio(audioType.ui);
         const currentBet = parseInt(this.betAmountLabel.string);
         let totalCoin = parseInt(this.coinLabel.string);
-        if (currentBet > totalCoin) {
-            cc.log("Not enough coins");
-            return;
-        } else if (currentBet <= totalCoin) {
-            totalCoin -= currentBet;
-            this.coinLabel.string = totalCoin.toString();
-            SceneManager.instance.changeCoinAmount(totalCoin);
+        if (!GameManager.instance.isFreeGameRunning) {
+            if (currentBet > totalCoin) {
+                cc.log("Not enough coins");
+                return;
+            } else if (currentBet <= totalCoin) {
+                totalCoin -= currentBet;
+                this.coinLabel.string = totalCoin.toString();
+                SceneManager.instance.changeCoinAmount(totalCoin);
+                cc.log("Starting Spin");
+                this.spinCommon(currentBet);
+            }
+        } else {
             this.winAmountLabel.string = "0.00";
-            GameManager.instance.resetSymbolsPositions();
-            GameManager.instance.betAmountDuringRolling = currentBet;
-            GameStateManager.currentGameState = GameState.Rolling;
-            AudioManager.instance.playAudio(audioType.rolling);
-            this.disableGameButtons();
-            cc.log("Starting Spin");
+            cc.log("Starting Free Spin");
+            FreeGame.instance.increaseCurrentFGNumber();
+            this.spinCommon(currentBet);
         }
+    }
+    private spinCommon(currentBet) {
+        this.winAmountLabel.string = "0.00";
+        GameManager.instance.resetSymbolsPositions();
+        GameManager.instance.betAmountDuringRolling = currentBet;
+        GameStateManager.currentGameState = GameState.Rolling;
+        AudioManager.instance.playAudio(audioType.rolling);
+        this.disableGameButtons();
+        
     }
 
     //function to set initial value to labels
@@ -137,6 +149,9 @@ export default class GameUIManager extends cc.Component {
     // function to decease/increase bet
     private updateBet(betBehaviour: string) {
         if (GameStateManager.currentGameState != GameState.Ready) {
+            return;
+        }
+        if(GameManager.instance.isFreeGameRunning){
             return;
         }
         AudioManager.instance.playAudio(audioType.bet);
@@ -166,6 +181,10 @@ export default class GameUIManager extends cc.Component {
         this.decreaseBetButton.interactable = true;
 
         this.homeButton.interactable = true;
+        if(GameManager.instance.isFreeGameRunning){
+            this.increaseBetButton.interactable = false;
+            this.decreaseBetButton.interactable = false;
+        }
     }
 
     //function to add win amount to coin 

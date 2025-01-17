@@ -7,6 +7,7 @@
 
 import AssetsLoader from "./AssetsLoader";
 import AudioManager from "./AudioManager";
+import FreeGame from "./FreeGame";
 import GameManager from "./GameManager";
 import GameUIManager from "./GameUIManager";
 
@@ -68,6 +69,7 @@ export default class SceneManager extends cc.Component {
         AssetsLoader.destroyInstance();
         GameManager.instance=null;
         GameUIManager.instance=null;
+        FreeGame.instance=null;
 
     }
 }
