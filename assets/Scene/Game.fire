@@ -355,9 +355,6 @@
       "__id__": 5
     },
     "_enabled": true,
-    "audioSource": {
-      "__id__": 9
-    },
     "buttonAudio": {
       "__uuid__": "848216eb-3e6b-432e-a1f1-6dc5f3421efe"
     },

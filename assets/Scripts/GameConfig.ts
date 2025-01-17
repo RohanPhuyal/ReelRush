@@ -35,3 +35,6 @@ export const winLine = [
 export const audioType = {
     "bet":0, "ui":1, "rolling":2
 }
+export async function waitTime(seconds: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, seconds * 1000));
+}

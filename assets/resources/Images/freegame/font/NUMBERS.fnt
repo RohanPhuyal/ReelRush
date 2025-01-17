@@ -1,0 +1,17 @@
+info face="Arial" size=80 bold=0 italic=0 charset="" unicode=1 stretchH=100 smooth=1 aa=1 padding=0,0,0,0 spacing=1,1 outline=0
+common lineHeight=80 base=64 scaleW=800 scaleH=500 pages=1 packed=0 alphaChnl=1 redChnl=0 greenChnl=0 blueChnl=0
+page id=0 file="NUMBERS_0.png"
+chars count=13
+char id=32   x=121   y=400   width=3     height=1     xoffset=-1    yoffset=79    xadvance=20    page=0  chnl=15
+char id=44   x=0     y=0     width=121   height=208   xoffset=0     yoffset=0     xadvance=121   page=0  chnl=15
+char id=46   x=246   y=0     width=121   height=193   xoffset=0     yoffset=0     xadvance=121   page=0  chnl=15
+char id=48   x=368   y=0     width=121   height=193   xoffset=0     yoffset=0     xadvance=121   page=0  chnl=15
+char id=49   x=622   y=194   width=90    height=187   xoffset=0     yoffset=0     xadvance=90    page=0  chnl=15
+char id=50   x=121   y=209   width=122   height=190   xoffset=0     yoffset=0     xadvance=122   page=0  chnl=15
+char id=51   x=0     y=209   width=120   height=193   xoffset=0     yoffset=0     xadvance=120   page=0  chnl=15
+char id=52   x=367   y=194   width=128   height=188   xoffset=0     yoffset=0     xadvance=128   page=0  chnl=15
+char id=53   x=244   y=194   width=122   height=190   xoffset=0     yoffset=0     xadvance=122   page=0  chnl=15
+char id=54   x=490   y=0     width=121   height=193   xoffset=0     yoffset=0     xadvance=121   page=0  chnl=15
+char id=55   x=496   y=194   width=125   height=187   xoffset=0     yoffset=0     xadvance=125   page=0  chnl=15
+char id=56   x=122   y=0     width=123   height=193   xoffset=0     yoffset=0     xadvance=123   page=0  chnl=15
+char id=57   x=612   y=0     width=121   height=193   xoffset=0     yoffset=0     xadvance=121   page=0  chnl=15

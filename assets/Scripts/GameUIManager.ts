@@ -68,14 +68,11 @@ export default class GameUIManager extends cc.Component {
 
 
     }
-    onSoundButtonPressed(){
+    onSoundButtonPressed() {
         AudioManager.instance.muteAudio();
-        if(AudioManager.instance.audioSource.mute){
-            this.soundButton.interactable=false;
-        }else{
-            this.soundButton.interactable=true;
-        }
+        this.soundButton.interactable = !AudioManager.instance.mute;
     }
+    
     private onMoreButtonPressed() {
         AudioManager.instance.playAudio(audioType.ui);
         if (this.homeButton.node.active) {
@@ -99,7 +96,7 @@ export default class GameUIManager extends cc.Component {
         AudioManager.instance.playAudio(audioType.ui);
         GameManager.instance.symbols = [];
         GameStateManager.currentGameState = GameState.Start;
-        AudioManager.instance.stopAudio();
+        AudioManager.instance.stopAllAudio();
         SceneManager.instance.exitToMenu();
     }
     //function to start rolling
