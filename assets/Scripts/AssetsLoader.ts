@@ -6,6 +6,7 @@
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
 import { AssetData, AssetItem, SymbolAsset } from "./GameConfig";
+import GameManager from "./GameManager";
 import StringToAssetType from "./StringToAssetsType";
 
 const { ccclass, property } = cc._decorator;
@@ -34,14 +35,14 @@ export default class AssetsLoader extends cc.Component {
             this._instance = null; // Clear the instance
         }
     }
-    
+
     //function to execure the randomize symbols one by one
     public async preloadAndRandomizeSymbols(assetsData: cc.JsonAsset, onProgress: (progress: number) => void): Promise<void> {
         await this.getAllAssetsFromJSON(assetsData);
         await this.preloadAssets(this.allAssets, () => { cc.log("Loaded"); }, onProgress);
         await this.shuffleArray(this.symbolsData);
     }
-    
+
 
 
     // Function to get assets from JSON
@@ -91,11 +92,11 @@ export default class AssetsLoader extends cc.Component {
                 });
             });
         });
-    
+
         await Promise.all(promises);
         cbPass();
     }
-    
+
 
     //function to shuffle the array
     async shuffleArray(array) {
@@ -174,8 +175,19 @@ export default class AssetsLoader extends cc.Component {
     }
     //change the sprite for win assets
     assignWinSymbols(symbols: cc.Node[][], result: cc.JsonAsset) {
-        const randomWinValue = this.getRandomNumber(result.json.winningConfig.length);
-        const winningConfig = result.json.winningConfig[randomWinValue];
+
+        // const winningConfig = result.json.winningConfig[randomWinValue];
+        // let winningConfig = result.json.winningConfig[randomWinValue];
+        let winningConfig:number;
+
+        //remove later
+        if (GameManager.instance.isFreeGameRunning) {
+            const randomWinValue = this.getRandomNumber(result.json.freeGameConfig.length);
+            winningConfig = result.json.freeGameConfig[randomWinValue];
+        } else {
+            const randomWinValue = this.getRandomNumber(result.json.winningConfig.length);
+            winningConfig = result.json.winningConfig[randomWinValue];
+        }
 
         // Loop through each roll in the winning configuration
         Object.entries(winningConfig).forEach(([rollKey, identifiers]) => {
@@ -226,6 +238,6 @@ export default class AssetsLoader extends cc.Component {
     public getRandomNumber(max: number): number {
         return Math.floor(Math.random() * max); // Handles 0 to max - 1 correctly
     }
-    
+
 
 }

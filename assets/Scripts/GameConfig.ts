@@ -24,14 +24,24 @@ export interface SymbolAsset {
     identifier: number;
 }
 
+// export const winLine = [
+//     [[0, 0], [1, 0], [2, 0]], // Bottom horizontal line
+//     [[0, 1], [1, 1], [2, 1]], // Middle horizontal line
+//     [[0, 2], [1, 2], [2, 2]], // Top horizontal line
+//     [[0, 0], [1, 1], [2, 2]], // Bot left to top right diagoal
+//     [[0, 2], [1, 1], [2, 0]]  // bot right to top left diagonal
+// ];
 export const winLine = [
-    [[0, 0], [1, 0], [2, 0]], // Bottom horizontal line
-    [[0, 1], [1, 1], [2, 1]], // Middle horizontal line
-    [[0, 2], [1, 2], [2, 2]], // Top horizontal line
-    [[0, 0], [1, 1], [2, 2]], // Bot left to top right diagoal
-    [[0, 2], [1, 1], [2, 0]]  // bot right to top left diagonal
+    [0,0,0], // Bottom horizontal line
+    [1,1,1], // Middle horizontal line
+    [2,2,2], // Top horizontal line
+    [0,1,2], // Bot left to top right diagoal
+    [2,1,0]  // bot right to top left diagonal
 ];
 
 export const audioType = {
     "bet":0, "ui":1, "rolling":2
+}
+export async function waitTime(seconds: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, seconds * 1000));
 }

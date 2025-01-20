@@ -1,61 +1,57 @@
-// Learn TypeScript:
-//  - https://docs.cocos.com/creator/manual/en/scripting/typescript.html
-// Learn Attribute:
-//  - https://docs.cocos.com/creator/manual/en/scripting/reference/attributes.html
-// Learn life-cycle callbacks:
-//  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
-
 const { ccclass, property } = cc._decorator;
 
 import { audioType } from "./GameConfig";
+
 @ccclass
 export default class AudioManager extends cc.Component {
 
-    @property(cc.AudioSource)
-    audioSource: cc.AudioSource = null;
-
     @property(cc.AudioClip)
     buttonAudio: cc.AudioClip = null;
+
     @property(cc.AudioClip)
     rollingAudio: cc.AudioClip = null;
+
     @property(cc.AudioClip)
     betAudio: cc.AudioClip = null;
-    // LIFE-CYCLE CALLBACKS:
+
     public static instance: AudioManager = null;
+
+    public mute: boolean = false; // Add a mute state property
+
     playAudio(audio: number) {
+        if (this.mute) return; // Skip playing if muted
+
+        let clip: cc.AudioClip = null;
+        let loop: boolean = false;
+
         if (audio === audioType.ui) {
-            this.audioSource.clip = this.buttonAudio;
-            this.audioSource.loop = false;
-            this.audioSource.play();
+            clip = this.buttonAudio;
+        } else if (audio === audioType.bet) {
+            clip = this.betAudio;
+        } else if (audio === audioType.rolling) {
+            clip = this.rollingAudio;
+            loop = true;
         }
-        if (audio === audioType.bet) {
-            this.audioSource.clip = this.betAudio;
-            this.audioSource.loop = false;
-            this.audioSource.play();
-        }
-        if (audio === audioType.rolling) {
-            this.audioSource.clip = this.rollingAudio;
-            this.audioSource.loop = true;
-            this.audioSource.play();
+
+        if (clip) {
+            cc.audioEngine.play(clip, loop, 1); // Play the audio directly
         }
     }
 
-    stopAudio() {
-        this.audioSource.stop();
+    stopAllAudio() {
+        cc.audioEngine.stopAll(); // Stop all audio
     }
+
+    muteAudio() {
+        this.mute = !this.mute; // Toggle mute state
+        const volume = this.mute ? 0 : 1;
+        cc.audioEngine.setEffectsVolume(volume); // Set effects volume
+        cc.audioEngine.setMusicVolume(volume);  // Set music volume
+    }
+
     onLoad() {
-
         if (!AudioManager.instance) {
             AudioManager.instance = this;
         }
     }
-    muteAudio() {
-        if (this.audioSource.mute) {
-            this.audioSource.mute = false;
-        } else {
-            this.audioSource.mute = true;
-        }
-    }
-
-    // update (dt) {}
 }

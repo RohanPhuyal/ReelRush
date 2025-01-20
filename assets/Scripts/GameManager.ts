@@ -1,6 +1,7 @@
 import AssetsLoader from "./AssetsLoader";
 import AudioManager from "./AudioManager";
-import { winLine } from "./GameConfig";
+import FreeGame from "./FreeGame";
+import { waitTime, winLine } from "./GameConfig";
 import GameStateManager, { GameState } from "./GameStateManager";
 import UIManager from "./GameUIManager";
 
@@ -34,6 +35,11 @@ export default class GameManager extends cc.Component {
     resultJson: cc.JsonAsset = null
     // symbols: cc.Node[] = [];
 
+    //freewin section
+    public isFreeGameWin =false;
+    @property(cc.Node)
+    freeGame: cc.Node = null;
+    isFreeGameRunning = false;
     //singleton
     public static instance: GameManager = null;
 
@@ -42,7 +48,7 @@ export default class GameManager extends cc.Component {
         if (!GameManager.instance) {
             GameManager.instance = this;
         }
-        
+
         await this.startGameManager();
 
     }
@@ -60,6 +66,7 @@ export default class GameManager extends cc.Component {
     }
     async resetSymbolsPositions() {
         this.clampPoints = [];
+        this.isFreeGameWin=false;
         await this.disableWinLineNodes();
         await this.setSymbolsPositions3x5(this.rollBG);
     }
@@ -207,20 +214,29 @@ export default class GameManager extends cc.Component {
         }
         AssetsLoader.instance.assignWinSymbols(this.symbols, this.resultJson);
         GameStateManager.currentGameState = GameState.Result;
-        AudioManager.instance.stopAudio();
+        AudioManager.instance.stopAllAudio();
         await this.calculateResult(this.symbols);
     }
-
 
     async calculateResult(symbols: cc.Node[][]) {
         if (GameStateManager.currentGameState === GameState.Result) {
             const spriteIdentifier = await AssetsLoader.instance.getVisibleSprite(symbols);
             const winningLines = await this.checkWinLines(spriteIdentifier);
             if (winningLines && winningLines.length > 0) {
-
                 this.addWinAmount(winningLines.length);
                 // Show the winning lines one by one
                 await this.showWinningLines(winningLines);
+            }
+            if(this.isFreeGameWin){
+                await waitTime(1);
+                this.freeGame.active=true;
+                this.disableWinLineNodes();
+                await FreeGame.instance.startFreeGame();
+                this.freeGame.active=false;
+                
+            }
+            if(this.isFreeGameRunning&&FreeGame.instance.currentFGNumber>=FreeGame.instance.totalFGNumber){
+                await FreeGame.instance.onFreeGamesOver();
             }
             GameStateManager.currentGameState = GameState.Ready;
             UIManager.instance.enableGameButtons();
@@ -228,6 +244,7 @@ export default class GameManager extends cc.Component {
             return;
         }
     }
+    public totalFreeWinAmount: number = 0;
     async addWinAmount(winningLinesLength: number) {
         if (winningLinesLength > 0) {
             let winAmount = 0;
@@ -242,14 +259,19 @@ export default class GameManager extends cc.Component {
             } else if (this.betAmountDuringRolling === 5) {
                 winAmount = this.betAmountDuringRolling * winningLinesLength * 5;
             }
+            if(this.isFreeGameRunning){
+                this.totalFreeWinAmount+=winAmount;
+            }
             UIManager.instance.addWinAmount(winAmount);
         }
     }
     // This function will check which lines are winning
     async checkWinLines(spriteIdentifier) {
         const winLines = winLine;
-
+        cc.log("Sprite Identifier: ");
+        cc.log(spriteIdentifier);
         const winningLines: number[] = [];
+        let isTripleBar = false;
 
         // Iterate through each win line and check if the symbols match
         for (let i = 0; i < winLines.length; i++) {
@@ -257,13 +279,61 @@ export default class GameManager extends cc.Component {
             const [a, b, c] = line;
 
             // Check if all three cells in this line have the same value
-            if (spriteIdentifier[a[0]][a[1]] === spriteIdentifier[b[0]][b[1]] && spriteIdentifier[a[0]][a[1]] === spriteIdentifier[c[0]][c[1]]) {
+            if (
+                spriteIdentifier[0][a] === spriteIdentifier[1][b] &&
+                spriteIdentifier[0][a] === spriteIdentifier[2][c]
+            ) {
                 winningLines.push(i); // Add the index of the winning line
+
+                // Check if the line specifically matches `8, 8, 8`
+                if (spriteIdentifier[0][a] === 8) {
+                    isTripleBar = true;
+                }
             }
+        }
+
+        // Log or process if `8, 8, 8` was found
+        if (isTripleBar) {
+            this.isFreeGameWin=true;
+            cc.log("Found a winning line with identifier 8, 8, 8!");
         }
 
         return winningLines; // Return the indices of all winning lines
     }
+    // async checkWinLines(spriteIdentifier) {
+    //     const winLines = winLine;
+    //     cc.log("Sprite Identifier: ");
+    //     cc.log(spriteIdentifier);
+    //     const winningLines: number[] = [];
+    //     let isTripleBar = false;
+
+    //     // Iterate through each win line and check if the symbols match
+    //     for (let i = 0; i < winLines.length; i++) {
+    //         const line = winLines[i];
+    //         const [a, b, c] = line;
+
+    //         // Check if all three cells in this line have the same value
+    //         if (
+    //             spriteIdentifier[a[0]][a[1]] === spriteIdentifier[b[0]][b[1]] &&
+    //             spriteIdentifier[a[0]][a[1]] === spriteIdentifier[c[0]][c[1]]
+    //         ) {
+    //             winningLines.push(i); // Add the index of the winning line
+
+    //             // Check if the line specifically matches `8, 8, 8`
+    //             if (spriteIdentifier[a[0]][a[1]] === 8) {
+    //                 isTripleBar = true;
+    //             }
+    //         }
+    //     }
+
+    //     // Log or process if `8, 8, 8` was found
+    //     if (isTripleBar) {
+    //         this.isFreeGameWin=true;
+    //         cc.log("Found a winning line with identifier 8, 8, 8!");
+    //     }
+
+    //     return winningLines; // Return the indices of all winning lines
+    // }
     // This function will enable the win lines one by one with animation
     async showWinningLines(winningLines: number[]) {
         // Add a 700ms delay right at the beginning of the function
