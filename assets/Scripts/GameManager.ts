@@ -268,7 +268,8 @@ export default class GameManager extends cc.Component {
     // This function will check which lines are winning
     async checkWinLines(spriteIdentifier) {
         const winLines = winLine;
-
+        cc.log("Sprite Identifier: ");
+        cc.log(spriteIdentifier);
         const winningLines: number[] = [];
         let isTripleBar = false;
 
@@ -279,13 +280,13 @@ export default class GameManager extends cc.Component {
 
             // Check if all three cells in this line have the same value
             if (
-                spriteIdentifier[a[0]][a[1]] === spriteIdentifier[b[0]][b[1]] &&
-                spriteIdentifier[a[0]][a[1]] === spriteIdentifier[c[0]][c[1]]
+                spriteIdentifier[0][a] === spriteIdentifier[1][b] &&
+                spriteIdentifier[0][a] === spriteIdentifier[2][c]
             ) {
                 winningLines.push(i); // Add the index of the winning line
 
                 // Check if the line specifically matches `8, 8, 8`
-                if (spriteIdentifier[a[0]][a[1]] === 8) {
+                if (spriteIdentifier[0][a] === 8) {
                     isTripleBar = true;
                 }
             }
@@ -299,6 +300,40 @@ export default class GameManager extends cc.Component {
 
         return winningLines; // Return the indices of all winning lines
     }
+    // async checkWinLines(spriteIdentifier) {
+    //     const winLines = winLine;
+    //     cc.log("Sprite Identifier: ");
+    //     cc.log(spriteIdentifier);
+    //     const winningLines: number[] = [];
+    //     let isTripleBar = false;
+
+    //     // Iterate through each win line and check if the symbols match
+    //     for (let i = 0; i < winLines.length; i++) {
+    //         const line = winLines[i];
+    //         const [a, b, c] = line;
+
+    //         // Check if all three cells in this line have the same value
+    //         if (
+    //             spriteIdentifier[a[0]][a[1]] === spriteIdentifier[b[0]][b[1]] &&
+    //             spriteIdentifier[a[0]][a[1]] === spriteIdentifier[c[0]][c[1]]
+    //         ) {
+    //             winningLines.push(i); // Add the index of the winning line
+
+    //             // Check if the line specifically matches `8, 8, 8`
+    //             if (spriteIdentifier[a[0]][a[1]] === 8) {
+    //                 isTripleBar = true;
+    //             }
+    //         }
+    //     }
+
+    //     // Log or process if `8, 8, 8` was found
+    //     if (isTripleBar) {
+    //         this.isFreeGameWin=true;
+    //         cc.log("Found a winning line with identifier 8, 8, 8!");
+    //     }
+
+    //     return winningLines; // Return the indices of all winning lines
+    // }
     // This function will enable the win lines one by one with animation
     async showWinningLines(winningLines: number[]) {
         // Add a 700ms delay right at the beginning of the function
