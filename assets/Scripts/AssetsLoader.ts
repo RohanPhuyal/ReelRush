@@ -5,7 +5,7 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
-import { AssetData, AssetItem, SymbolAsset } from "./GameConfig";
+import { AssetData, AssetItem, SymbolAsset, winLine } from "./GameConfig";
 import GameManager from "./GameManager";
 import StringToAssetType from "./StringToAssetsType";
 
@@ -178,7 +178,7 @@ export default class AssetsLoader extends cc.Component {
 
         // const winningConfig = result.json.winningConfig[randomWinValue];
         // let winningConfig = result.json.winningConfig[randomWinValue];
-        let winningConfig:number;
+        let winningConfig: number;
 
         //remove later
         if (GameManager.instance.isFreeGameRunning) {

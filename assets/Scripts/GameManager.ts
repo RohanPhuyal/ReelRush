@@ -36,10 +36,15 @@ export default class GameManager extends cc.Component {
     // symbols: cc.Node[] = [];
 
     //freewin section
-    public isFreeGameWin =false;
+    public isFreeGameWin = false;
     @property(cc.Node)
     freeGame: cc.Node = null;
     isFreeGameRunning = false;
+
+    @property(cc.Prefab)
+    symbolFX: cc.Prefab = null;
+    @property(cc.Node)
+    fxNode: cc.Node = null;
     //singleton
     public static instance: GameManager = null;
 
@@ -66,7 +71,9 @@ export default class GameManager extends cc.Component {
     }
     async resetSymbolsPositions() {
         this.clampPoints = [];
-        this.isFreeGameWin=false;
+        this.isFreeGameWin = false;
+        this.position3x3 = [];
+        this.fxNode.removeAllChildren();
         await this.disableWinLineNodes();
         await this.setSymbolsPositions3x5(this.rollBG);
     }
@@ -104,6 +111,7 @@ export default class GameManager extends cc.Component {
     botPosition = 0;
     topPosition = 0;
     clampPoints = [];
+    position3x3 = [];
     //function to set symbols positions in 3x5 grid size
     public async setSymbolsPositions3x5(node: cc.Node): Promise<void> {
         return new Promise((resolve) => {
@@ -126,6 +134,9 @@ export default class GameManager extends cc.Component {
                 const rollNode = this.rollSymbolsChilds[col]; // Roll_0, Roll_1, Roll_2
                 const rollSymbols = rollNode.children; // Symbols under Roll_X (1, 4, 7,...)
 
+                // Initialize the sub-array for this column
+                this.position3x3[col] = [];
+
                 // Place symbols in a vertical stack for each roll
                 for (let row = 0; row < rows; row++) {
                     if (row >= rollSymbols.length) break;
@@ -135,6 +146,11 @@ export default class GameManager extends cc.Component {
 
                     if (col === 0) {
                         this.clampPoints.push(yPos);
+                    }
+                    // Collect the first 3x3 visible symbols' positions
+                    // Collect the first 3x3 visible symbols' positions
+                    if (row < 3) {
+                        this.position3x3[col].push([xPos, yPos]);
                     }
                     // Set symbol position in its column
                     rollSymbols[row].setPosition(new cc.Vec2(xPos, yPos));
@@ -222,20 +238,22 @@ export default class GameManager extends cc.Component {
         if (GameStateManager.currentGameState === GameState.Result) {
             const spriteIdentifier = await AssetsLoader.instance.getVisibleSprite(symbols);
             const winningLines = await this.checkWinLines(spriteIdentifier);
+            cc.log("print win line");
+            cc.log(winningLines);
             if (winningLines && winningLines.length > 0) {
                 this.addWinAmount(winningLines.length);
                 // Show the winning lines one by one
                 await this.showWinningLines(winningLines);
             }
-            if(this.isFreeGameWin){
+            if (this.isFreeGameWin) {
                 await waitTime(1);
-                this.freeGame.active=true;
+                this.freeGame.active = true;
                 this.disableWinLineNodes();
                 await FreeGame.instance.startFreeGame();
-                this.freeGame.active=false;
-                
+                this.freeGame.active = false;
+
             }
-            if(this.isFreeGameRunning&&FreeGame.instance.currentFGNumber>=FreeGame.instance.totalFGNumber){
+            if (this.isFreeGameRunning && FreeGame.instance.currentFGNumber >= FreeGame.instance.totalFGNumber) {
                 await FreeGame.instance.onFreeGamesOver();
             }
             GameStateManager.currentGameState = GameState.Ready;
@@ -259,8 +277,8 @@ export default class GameManager extends cc.Component {
             } else if (this.betAmountDuringRolling === 5) {
                 winAmount = this.betAmountDuringRolling * winningLinesLength * 5;
             }
-            if(this.isFreeGameRunning){
-                this.totalFreeWinAmount+=winAmount;
+            if (this.isFreeGameRunning) {
+                this.totalFreeWinAmount += winAmount;
             }
             UIManager.instance.addWinAmount(winAmount);
         }
@@ -284,7 +302,7 @@ export default class GameManager extends cc.Component {
                 spriteIdentifier[0][a] === spriteIdentifier[2][c]
             ) {
                 winningLines.push(i); // Add the index of the winning line
-
+                this.startSymbolFx(a,b,c,spriteIdentifier[0][a]);
                 // Check if the line specifically matches `8, 8, 8`
                 if (spriteIdentifier[0][a] === 8) {
                     isTripleBar = true;
@@ -294,12 +312,58 @@ export default class GameManager extends cc.Component {
 
         // Log or process if `8, 8, 8` was found
         if (isTripleBar) {
-            this.isFreeGameWin=true;
+            this.isFreeGameWin = true;
             cc.log("Found a winning line with identifier 8, 8, 8!");
         }
 
         return winningLines; // Return the indices of all winning lines
     }
+
+    startSymbolFx(a,b,c, identifier) {
+        cc.log('3x3pos');
+        cc.log(this.position3x3);
+        cc.log("Identifier: "+identifier);
+        // Instantiate the prefab at the position of each node in the winning line
+        for (const [col, row] of [[0, a], [1, b], [2, c]]) {
+            const position = this.position3x3[col]?.[row]; // Access the position from position3x3
+            if (position) {
+                const [xPos, yPos] = position; // Destructure x and y positions
+                const parentNode = this.fxNode; // Get the parent node for this column
+
+                // Instantiate the prefab
+                const instantiatedFX = cc.instantiate(this.symbolFX);
+                instantiatedFX.setPosition(new cc.Vec2(xPos, yPos)); // Set the position from position3x3
+                parentNode.addChild(instantiatedFX); // Add the prefab to the column's parent node
+                this.playSymbolFXAnimationByIndex(instantiatedFX, identifier); // Play the animation
+
+            } else {
+                cc.warn(`No position found in position3x3 at column ${col}, row ${row}`);
+            }
+        }
+    }
+    playSymbolFXAnimationByIndex(instantiatedFX: cc.Node, clipIndex: number) {
+        const symbolfxNode = instantiatedFX; // Get the 'symbolfx' node from the prefab
+    
+        const animation = symbolfxNode.getComponent(cc.Animation); // Get the Animation component
+        if (!animation) {
+            cc.warn("Animation component not found on 'symbolfx' node!");
+            return;
+        }
+    
+        const clips = animation.getClips(); // Get all clips
+        if (clipIndex < 0 || clipIndex >= clips.length) {
+            cc.warn(`Invalid clip index '${clipIndex}'. Available range: 0-${clips.length - 1}`);
+            return;
+        }
+    
+        cc.log("YETA CLIP PLAy")
+        const clip = clips[clipIndex]; // Retrieve the clip by index
+        animation.play(clip.name); // Play the clip by its name
+    }
+    
+    
+    
+
     // async checkWinLines(spriteIdentifier) {
     //     const winLines = winLine;
     //     cc.log("Sprite Identifier: ");
